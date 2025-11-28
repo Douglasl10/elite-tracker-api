@@ -6,6 +6,7 @@ import { setupMongo } from "./database";
 import cors from "cors";
 
 const app = express();
+const PORT = process.env.PORT || 4000;
 
 setupMongo().then(() => {
     app.use(cors({
@@ -16,7 +17,8 @@ setupMongo().then(() => {
 
     app.use(routes);
 
-    app.listen(4000, () => console.log("🚀 Server is running on port 4000"));
+    app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
 }).catch((err) => {
-    console.error(err.message)
+    console.error(err.message);
+    process.exit(1);
 });
