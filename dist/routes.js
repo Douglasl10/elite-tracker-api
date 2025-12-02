@@ -1,0 +1,31 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.routes = void 0;
+const express_1 = require("express");
+const package_json_1 = __importDefault(require("../package.json"));
+const habits_controller_1 = require("./controllers/habits.controller");
+const focus_time_controller_1 = require("./controllers/focus-time.controller");
+const auth_controller_1 = require("./controllers/auth.controller");
+const auth_middleware_1 = __importDefault(require("./middlewares/auth.middleware"));
+exports.routes = (0, express_1.Router)();
+const habitsController = new habits_controller_1.HabitsController();
+const focusTimeController = new focus_time_controller_1.FocusTimeController();
+const authController = new auth_controller_1.AuthController();
+exports.routes.get("/", (request, response) => {
+    const { name, description, version } = package_json_1.default;
+    return response.status(200).json({ name, description, version });
+});
+exports.routes.get("/auth", (request, response) => authController.auth(request, response));
+exports.routes.get("/auth/callback", (request, response) => authController.authCallback(request, response));
+exports.routes.use(auth_middleware_1.default);
+exports.routes.post("/habits", (request, response) => habitsController.store(request, response));
+exports.routes.get("/habits", (request, response) => habitsController.index(request, response));
+exports.routes.delete("/habits/:id", (request, response) => habitsController.remove(request, response));
+exports.routes.get("/habits/:id/metrics", (request, response) => habitsController.metrics(request, response));
+exports.routes.patch("/habits/:id/toggle", (request, response) => habitsController.toggle(request, response));
+exports.routes.post("/focus-time", (request, response) => focusTimeController.store(request, response));
+exports.routes.get("/focus-time/metrics", (request, response) => focusTimeController.metricsByMonth(request, response));
+exports.routes.get("/focus-time", (request, response) => focusTimeController.index(request, response));
