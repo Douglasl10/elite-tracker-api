@@ -4,14 +4,17 @@ import express from "express";
 import { routes } from "./routes";
 import { setupMongo } from "./database";
 import cors from "cors";
+import mongoose from "mongoose";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 setupMongo().then(() => {
     app.use(cors({
-        origin: "http://localhost:5173"
+        origin: "http://localhost:3000",
+        credentials: true,
     }));
+    mongoose.connect(process.env.MONGO_URL!);
 
     app.use(express.json());
 
