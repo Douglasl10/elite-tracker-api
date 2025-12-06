@@ -11,7 +11,12 @@ const PORT = process.env.PORT || 4000;
 
 setupMongo().then(() => {
     app.use(cors({
-        origin: "http://localhost:3000",
+        origin: [
+            
+                "http://localhost:3000",
+                "https://dashing-rolypoly-42afbe.netlify.app"
+            ],
+        
         credentials: true,
     }));
     mongoose.connect(process.env.MONGO_URL!);
