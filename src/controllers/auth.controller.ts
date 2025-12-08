@@ -2,36 +2,33 @@ import { Request, Response } from "express";
 import axios, { isAxiosError } from "axios";
 import jwt from "jsonwebtoken";
 
-const clientId = process.env.GITHUB_CLIENT_ID;
-const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-const jwtSecret = process.env.JWT_SECRET; // pode ser undefined em dev, vamos validar
+const clientId = process.env.GITHUB_CLIENT_ID!;
+const clientSecret = process.env.GITHUB_CLIENT_SECRET!;
+const jwtSecret = process.env.JWT_SECRET!;
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "1d";
-const githubRedirectUri = process.env.GITHUB_REDIRECT_URI; // certifique-se de setar isso
+const githubRedirectUri = process.env.GITHUB_REDIRECT_URI!;
 
 export class AuthController {
-  auth = async (request: Request, response: Response) => {
-    if (!clientId) {
-      return response.status(500).json({ error: "GITHUB_CLIENT_ID not configured" });
-    }
+  // 1️⃣ RETORNA O LINK DE LOGIN
+  auth = async (req: Request, res: Response) => {
+    const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      githubRedirectUri
+    )}&scope=read:user`;
 
-    // inclui redirect_uri para garantir retorno correto do GitHub
-    const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(
-      clientId
-    )}&redirect_uri=${encodeURIComponent(githubRedirectUri ?? "")}&scope=read:user`;
-
-    return response.status(200).json({ redirectUrl });
+    return res.status(200).json({ redirectUrl });
   };
 
-  authCallback = async (request: Request, response: Response) => {
+  // 2️⃣ CALLBACK DO GITHUB (TROCA CODE → TOKEN → USER)
+  authCallback = async (req: Request, res: Response) => {
     try {
-      const code = String(request.query.code ?? "");
+      const code = req.query.code as string;
 
       if (!code) {
-        return response.status(400).json({ error: "Code is required" });
+        return res.status(400).json({ error: "Code is required" });
       }
 
-      // troca code por access_token
-      const accessTokenResult = await axios.post(
+      // TROCA CODE POR ACCESS TOKEN
+      const tokenResponse = await axios.post(
         "https://github.com/login/oauth/access_token",
         {
           client_id: clientId,
@@ -39,44 +36,33 @@ export class AuthController {
           code,
           redirect_uri: githubRedirectUri,
         },
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        }
+        { headers: { Accept: "application/json" } }
       );
 
-      const accessToken = accessTokenResult.data?.access_token;
-      if (!accessToken) {
-        return response.status(500).json({ error: "Failed to obtain access token" });
-      }
+      const accessToken = tokenResponse.data.access_token;
+      if (!accessToken) return res.status(500).json({ error: "GitHub token error" });
 
-      // busca dados do usuário no GitHub
-      const userDataResult = await axios.get("https://api.github.com/user", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/vnd.github+json",
-        },
+      // BUSCA DADOS DO USUÁRIO
+      const userResponse = await axios.get("https://api.github.com/user", {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      const { node_id: id, avatar_url: avatarUrl, name } = userDataResult.data;
+      const { node_id: id, avatar_url: avatarUrl, name } = userResponse.data;
 
-      if (!jwtSecret) {
-        return response.status(500).json({ error: "JWT_SECRET not configured" });
-      }
-
-      // jwt.sign espera jwt.Secret; jwtExpiresIn deve ser string ou number (p.ex. "1d")
-      const token = jwt.sign({ id }, String(jwtSecret), {
+      // GERA JWT
+       const token = jwt.sign({ id }, String(jwtSecret), {
                 expiresIn: Number(jwtExpiresIn) || "1d"
             });
 
-      // Retornar nome como `name` (consistente com o front)
-      return response.status(200).json({ id, name, avatarUrl, token });
+      return res.status(200).json({
+        id,
+        name,
+        avatarUrl,
+        token,
+      });
     } catch (error) {
-      if (isAxiosError(error)) {
-        return response.status(500).json({ error: error.message });
-      }
-      return response.status(500).json({ error: "Internal server error" });
+      if (isAxiosError(error)) return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: "Internal error" });
     }
   };
 }

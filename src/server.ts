@@ -14,12 +14,16 @@ setupMongo().then(() => {
         origin: [
             "http://localhost:3000",
             "http://localhost:5173",
-            "https://dashing-rolypoly-42afbe.netlify.app"
+            "https://dashing-rolypoly-42afbe.netlify.app",
+            "https://elitetracker.netlify.app"
         ],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
     }));
 
     mongoose.connect(process.env.MONGO_URL!);
+    app.options("*", cors());
 
     app.use(express.json());
 
