@@ -2,28 +2,35 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../@types/user.type";
 
-function authMiddleware(request: Request, response: Response, next: NextFunction) {
-    const authToken = request.headers.authorization;
+function authMiddleware(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
 
-    if (!authToken) {
-        return response.status(401).json({ error: "Token not provided" });
-    }
+  if (!authHeader) {
+    return res.status(401).json({ error: "Token not provided" });
+  }
 
-    const [, token] = authToken.split(" ");
+  const [scheme, token] = authHeader.split(" ");
 
-    try {
-        jwt.verify(token, String(process.env.JWT_SECRET), (error, decoded) => {
-            if (error) {
-                throw new Error();
-            }
-            request.user = decoded as User;
-            return next();
+  if (scheme !== "Bearer" || !token) {
+    return res.status(401).json({ error: "Token malformatted" });
+  }
 
-        })
-    } catch (error) {
-        return response.status(401).json({ error: "Invalid token" });
-    }
+  const secret = process.env.JWT_SECRET;
 
+  if (!secret) {
+    return res.status(500).json({ error: "JWT_SECRET not configured" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret) as User;
+
+    // adiciona dados do usuário no request
+    req.user = decoded;
+
+    return next();
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
 }
 
 export default authMiddleware;

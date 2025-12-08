@@ -1,17 +1,20 @@
 import { Schema, model } from "mongoose";
 
 const HabitsSchema = new Schema(
-    {
-       name: String,
-       completedDates: [Date],
-       userId: String,
+  {
+    name: { type: String, required: true },
+    completedDates: {
+      type: [Date],
+      default: [],
     },
-    {
-        versionKey: false,
-        timestamps: true,
-    },
-)
+    userId: { type: String, required: true },
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+);
 
-const habitsModel = model("habits", HabitsSchema)
+const habitsModel = model("habits", HabitsSchema);
 
-export default habitsModel
+export default habitsModel;

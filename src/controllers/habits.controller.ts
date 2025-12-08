@@ -64,7 +64,7 @@ export class HabitsController {
             _id: habit.data.id,
             userId: request.user.id,
         });
-        
+
 
         if (!findHabit) {
             return response.status(404).json({ message: "Habit not found" });
@@ -104,7 +104,7 @@ export class HabitsController {
         if (isHabitCompleted) {
             const habitUpdate = await habitsModel.findOneAndUpdate(
                 { _id: validated.data.id },
-                { $pull: { completedDates: now } },
+                { $addToSet: { completedDates: now } },
                 { returnDocument: 'after' }
             );
 
