@@ -5,7 +5,7 @@ import jwt, { SignOptions, Secret } from "jsonwebtoken";
 const clientId = process.env.GITHUB_CLIENT_ID!;
 const clientSecret = process.env.GITHUB_CLIENT_SECRET!;
 const jwtSecret: Secret = process.env.JWT_SECRET as string;
-const jwtExpiresIn: string = process.env.JWT_EXPIRES_IN || "1d";
+const jwtExpiresIn: SignOptions["expiresIn"] = Number(process.env.JWT_EXPIRES_IN!);
 const githubRedirectUri = process.env.GITHUB_REDIRECT_URI!;
 
 export class AuthController {
@@ -42,8 +42,7 @@ export class AuthController {
 
       const { node_id: id } = userResponse.data;
 
-      const options: SignOptions = { expiresIn: jwtExpiresIn };
-      const token = jwt.sign({ id }, jwtSecret, options);
+      const token = jwt.sign({ id }, jwtSecret, { expiresIn: jwtExpiresIn });
 
       return res.redirect(`https://elitetracker.netlify.app/autenticacao?token=${token}`);
     } catch (error) {
