@@ -12,18 +12,19 @@ const PORT = process.env.PORT || 4000;
 setupMongo().then(() => {
     app.use(cors({
         origin: [
-            
-                "http://localhost:3000",
-                "https://dashing-rolypoly-42afbe.netlify.app"
-            ],
-        
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://dashing-rolypoly-42afbe.netlify.app"
+        ],
         credentials: true,
     }));
+
     mongoose.connect(process.env.MONGO_URL!);
 
     app.use(express.json());
 
-    app.use(routes);
+    app.use("/api", routes);
+
 
     app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
 }).catch((err) => {
