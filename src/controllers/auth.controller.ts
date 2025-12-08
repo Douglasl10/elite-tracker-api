@@ -50,19 +50,19 @@ export class AuthController {
       const { node_id: id, avatar_url: avatarUrl, name } = userResponse.data;
 
       // GERA JWT
-       const token = jwt.sign({ id }, String(jwtSecret), {
-                expiresIn: Number(jwtExpiresIn) || "1d"
-            });
-
-      return res.status(200).json({
-        id,
-        name,
-        avatarUrl,
-        token,
+      const token = jwt.sign({ id }, String(jwtSecret), {
+        expiresIn: Number(jwtExpiresIn) || "1d"
       });
+
+
+      return res.redirect(
+        `https://elitetracker.netlify.app/autenticacao?token=${token}`
+      );
+      
     } catch (error) {
       if (isAxiosError(error)) return res.status(500).json({ error: error.message });
       return res.status(500).json({ error: "Internal error" });
     }
   };
 }
+
