@@ -51,7 +51,7 @@ export class AuthController {
 
       // GERA JWT
       const token = jwt.sign({ id }, String(jwtSecret), {
-        expiresIn: Number(jwtExpiresIn) || "1d"
+        expiresIn: Number(jwtExpiresIn)
       });
 
 
