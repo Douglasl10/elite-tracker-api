@@ -22,7 +22,6 @@ setupMongo().then(() => {
         credentials: true,
     }));
 
-    mongoose.connect(process.env.MONGO_URL!);
     app.options("*", cors());
 
     app.use(express.json());
