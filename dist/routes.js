@@ -18,9 +18,9 @@ exports.routes.get("/", (request, response) => {
     const { name, description, version } = package_json_1.default;
     return response.status(200).json({ name, description, version });
 });
-exports.routes.use(auth_middleware_1.default);
 exports.routes.get("/auth", (request, response) => authController.auth(request, response));
 exports.routes.get("/auth/callback", (request, response) => authController.authCallback(request, response));
+exports.routes.use(auth_middleware_1.default);
 exports.routes.post("/habits", (request, response) => habitsController.store(request, response));
 exports.routes.get("/habits", (request, response) => habitsController.index(request, response));
 exports.routes.delete("/habits/:id", (request, response) => habitsController.remove(request, response));

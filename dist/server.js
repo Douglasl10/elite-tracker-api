@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 4000;
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
     }));
-    app.options("*", (0, cors_1.default)());
+    // app.options("*", cors());
     app.use(express_1.default.json());
     app.use("/api", routes_1.routes);
     app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));

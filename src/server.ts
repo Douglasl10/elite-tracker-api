@@ -22,12 +22,11 @@ setupMongo().then(() => {
         credentials: true,
     }));
 
-    app.options("*", cors());
+    // app.options("*", cors());
 
     app.use(express.json());
 
     app.use("/api", routes);
-
 
     app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
 }).catch((err) => {
