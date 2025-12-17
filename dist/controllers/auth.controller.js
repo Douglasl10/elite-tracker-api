@@ -42,41 +42,39 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const clientId = process.env.GITHUB_CLIENT_ID;
 const clientSecret = process.env.GITHUB_CLIENT_SECRET;
 const jwtSecret = process.env.JWT_SECRET;
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "1d";
+const jwtExpiresIn = Number(process.env.JWT_EXPIRES_IN);
+const githubRedirectUri = process.env.GITHUB_REDIRECT_URI;
 class AuthController {
     constructor() {
-        this.auth = async (request, response) => {
-            const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}`;
-            response.status(200).json({ redirectUrl });
+        this.auth = async (req, res) => {
+            const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(githubRedirectUri)}&scope=read:user`;
+            return res.status(200).json({ redirectUrl });
         };
-        this.authCallback = async (request, response) => {
+        this.authCallback = async (req, res) => {
             try {
-                const { code } = request.query;
-                const accessTokenResult = await axios_1.default.post("https://github.com/login/oauth/access_token", {
+                const code = req.query.code;
+                if (!code)
+                    return res.status(400).json({ error: "Code is required" });
+                const tokenResponse = await axios_1.default.post("https://github.com/login/oauth/access_token", {
                     client_id: clientId,
                     client_secret: clientSecret,
                     code,
-                }, {
-                    headers: {
-                        "Accept": "application/json"
-                    }
+                    redirect_uri: githubRedirectUri,
+                }, { headers: { Accept: "application/json" } });
+                const accessToken = tokenResponse.data.access_token;
+                if (!accessToken)
+                    return res.status(500).json({ error: "GitHub token error" });
+                const userResponse = await axios_1.default.get("https://api.github.com/user", {
+                    headers: { Authorization: `Bearer ${accessToken}` },
                 });
-                const userDataResult = await axios_1.default.get("https://api.github.com/user", {
-                    headers: {
-                        "Authorization": `Bearer ${accessTokenResult.data.access_token}`
-                    }
-                });
-                const { node_id: id, avatar_url: avatarUrl, name: userName } = userDataResult.data;
-                const token = jsonwebtoken_1.default.sign({ id }, String(jwtSecret), {
-                    expiresIn: Number(jwtExpiresIn) || "1d"
-                });
-                return response.status(200).json({ id, avatarUrl, userName, token });
+                const { node_id: id } = userResponse.data;
+                const token = jsonwebtoken_1.default.sign({ id }, jwtSecret, { expiresIn: jwtExpiresIn });
+                return res.redirect(`https://elitetracker.netlify.app/autenticacao?token=${token}`);
             }
             catch (error) {
-                if ((0, axios_1.isAxiosError)(error)) {
-                    return response.status(500).json({ error: error.message });
-                }
-                return response.status(500).json({ error: "Internal server error" });
+                if ((0, axios_1.isAxiosError)(error))
+                    return res.status(500).json({ error: error.message });
+                return res.status(500).json({ error: "Internal error" });
             }
         };
     }

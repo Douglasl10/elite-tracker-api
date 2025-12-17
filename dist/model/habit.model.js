@@ -2,9 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const HabitsSchema = new mongoose_1.Schema({
-    name: String,
-    completedDates: [Date],
-    userId: String,
+    name: { type: String, required: true },
+    completedDates: {
+        type: [Date],
+        default: [],
+    },
+    userId: { type: String, required: true },
 }, {
     versionKey: false,
     timestamps: true,

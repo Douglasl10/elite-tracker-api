@@ -79,7 +79,7 @@ class HabitsController {
             const now = (0, dayjs_1.default)().startOf('day');
             const isHabitCompleted = findHabit.toObject()?.completedDates.find((item) => (0, dayjs_1.default)(String(item)).isSame(now));
             if (isHabitCompleted) {
-                const habitUpdate = await habit_model_1.default.findOneAndUpdate({ _id: validated.data.id }, { $pull: { completedDates: now } }, { returnDocument: 'after' });
+                const habitUpdate = await habit_model_1.default.findOneAndUpdate({ _id: validated.data.id }, { $addToSet: { completedDates: now } }, { returnDocument: 'after' });
                 return response.status(200).json({ message: "Habit already completed", habitUpdate });
             }
             const habitUpdate = await habit_model_1.default.findOneAndUpdate({ _id: validated.data.id }, { $push: { completedDates: now } }, { returnDocument: 'after' });

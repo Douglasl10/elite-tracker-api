@@ -1,14 +1,12 @@
 import mongoose from "mongoose";
 
-const {
-    MONGO_URL: mongoUrl
-} = process.env;
-
 export async function setupMongo() {
     try {
         if (mongoose.connection.readyState === 1) {
             return
         }
+
+        const { MONGO_URL: mongoUrl } = process.env;
 
         console.log("🎲 connecting to database...")
         await mongoose.connect(String(mongoUrl), {

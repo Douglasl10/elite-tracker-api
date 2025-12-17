@@ -12,10 +12,19 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
 (0, database_1.setupMongo)().then(() => {
     app.use((0, cors_1.default)({
-        origin: "http://localhost:5173"
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "https://dashing-rolypoly-42afbe.netlify.app",
+            "https://elitetracker.netlify.app"
+        ],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
     }));
+    app.options("*", (0, cors_1.default)());
     app.use(express_1.default.json());
-    app.use(routes_1.routes);
+    app.use("/api", routes_1.routes);
     app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
 }).catch((err) => {
     console.error(err.message);
