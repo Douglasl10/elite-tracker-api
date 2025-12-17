@@ -17,11 +17,11 @@ routes.get("/", (request, response) => {
     return response.status(200).json({ name, description, version });
 })
 
-routes.use(authMiddleware);
-
 routes.get("/auth", (request, response) => authController.auth(request, response));
 
 routes.get("/auth/callback", (request, response) => authController.authCallback(request, response));
+
+routes.use(authMiddleware);
 
 routes.post("/habits", (request, response) => habitsController.store(request, response));
 
