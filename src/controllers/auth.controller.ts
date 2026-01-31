@@ -69,7 +69,7 @@ export class AuthController {
 
       // 🔹 Redireciona para o front com o token
       return res.redirect(
-        `https://elite-tracker.netlify.app/auth?token=${token}`
+        `https://elite-tracker.netlify.app/autenticacao?token=${token}`
       );
     } catch (error) {
       if (isAxiosError(error)) {
