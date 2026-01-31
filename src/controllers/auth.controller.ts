@@ -69,8 +69,9 @@ export class AuthController {
 
       // 🔹 Redireciona para o front com o token
       return res.redirect(
-        `https://elite-tracker.netlify.app/autenticacao?token=${token}`
+        `https://elite-tracker.netlify.app/#/autenticacao?token=${token}`
       );
+
     } catch (error) {
       if (isAxiosError(error)) {
         console.error("Axios error:", error.response?.data || error.message);
@@ -81,5 +82,5 @@ export class AuthController {
       return res.status(500).json({ error: "Internal error" });
     }
   };
-  
+
 }
