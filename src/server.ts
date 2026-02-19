@@ -8,13 +8,6 @@ import { setupMongo } from "./database";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "https://elitetracker.netlify.app",
-  "https://elitetracker-front-eight.vercel.app",
-];
-
 setupMongo()
   .then(() => {
     app.use(
@@ -22,7 +15,12 @@ setupMongo()
         origin: (origin, callback) => {
           if (!origin) return callback(null, true);
 
-          if (allowedOrigins.includes(origin)) {
+          const allowed =
+            origin.startsWith("http://localhost") ||
+            origin.includes("netlify.app") ||
+            origin.includes("vercel.app");
+
+          if (allowed) {
             return callback(null, true);
           }
 
@@ -31,6 +29,7 @@ setupMongo()
         credentials: true,
       })
     );
+
 
     app.use(express.json());
     app.use("/api", routes);
